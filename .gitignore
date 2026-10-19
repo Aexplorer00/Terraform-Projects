@@ -1,0 +1,16 @@
+# Ignore all Terraform temporary and state files across all project subdirectories
+**/.terraform/
+**/.terraform/*
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Sensitive tfvars
+*.tfvars
+!example.tfvars
