@@ -1,0 +1,18 @@
+# Terraform state and plugin files
+**/.terraform/*
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Generated lambda zip package
+*.zip
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Sensitive tfvars
+*.tfvars
+!example.tfvars
