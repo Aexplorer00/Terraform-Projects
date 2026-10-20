@@ -4,6 +4,8 @@ A comprehensive, production-grade repository of daily Infrastructure as Code (Ia
 
 Each project includes end-to-end Terraform code, automated visual architecture diagrams, and a dedicated SRE / Cloud Architect interview deep-dive guide.
 
+> **Full Curriculum & Roadmap:** See **[CURRICULUM_ROADMAP.md](./CURRICULUM_ROADMAP.md)** for the complete 2026 SRE & DevOps multi-phase project plan.
+
 ---
 
 ## Project Catalog
