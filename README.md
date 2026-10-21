@@ -14,6 +14,7 @@ Each project includes end-to-end Terraform code, automated visual architecture d
 | :--- | :--- | :--- | :---: | :---: |
 | **[01-resilient-s3-sqs-dlq-pipeline](./01-resilient-s3-sqs-dlq-pipeline)** | Resilient Event-Driven Ingestion Pipeline with DLQ & Poison Pill Protection | `S3`, `SQS`, `KMS CMK`, `Bucket Notifications`, `Queue Policies` | [View Diagram](./01-resilient-s3-sqs-dlq-pipeline/architecture_diagram.png) | [INTERVIEW_QNA.md](./01-resilient-s3-sqs-dlq-pipeline/INTERVIEW_QNA.md) |
 | **[02-resilient-serverless-api-dynamodb](./02-resilient-serverless-api-dynamodb)** | Resilient Serverless Transaction Engine with Idempotent PutItem & GSI | `API Gateway`, `Lambda`, `DynamoDB`, `KMS CMK`, `IAM Roles` | [View Diagram](./02-resilient-serverless-api-dynamodb/architecture_diagram.png) | [INTERVIEW_QNA.md](./02-resilient-serverless-api-dynamodb/INTERVIEW_QNA.md) |
+| **[03-multiaz-zerotrust-vpc-endpoints](./03-multiaz-zerotrust-vpc-endpoints)** | Multi-AZ Zero-Trust VPC with S3 & DynamoDB Private Gateway Endpoints | `VPC`, `Subnets`, `Route Tables`, `IGW`, `VPC Endpoints` | [View Diagram](./03-multiaz-zerotrust-vpc-endpoints/architecture_diagram.png) | [INTERVIEW_QNA.md](./03-multiaz-zerotrust-vpc-endpoints/INTERVIEW_QNA.md) |
 
 ---
 
