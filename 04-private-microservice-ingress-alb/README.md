@@ -36,8 +36,8 @@ This architecture solves these challenges by implementing:
   - **The Chaining Rule:**
     ```hcl
     ingress {
-      from_port       = 8080
-      to_port         = 8080
+      from_port       = var.app_port
+      to_port         = var.app_port
       protocol        = "tcp"
       security_groups = [aws_security_group.alb.id] # NO IP CIDRs!
     }
@@ -99,23 +99,48 @@ For mission-critical production environments, this architecture can be upgraded 
 
 ---
 
-## 5. Directory Structure
+## 5. Enterprise Architecture Diagram & Visual Standard
+
+This project uses an **executive-grade visual architecture standard** built specifically for AWS Well-Architected reviews:
+
+| Naive / Generic Diagramming | Enterprise AWS Standard (Used Here) | Architectural Reason |
+| :--- | :--- | :--- |
+| **AWS Shield icon for Security Groups** | **Attached Security Policy Annotation** | Shield is a DDoS protection service. Security Groups are stateful ENI firewall rules, not separate network appliance boxes. |
+| **Separate nodes for every listener rule** | **Integrated Rule Rows inside ALB Card** | Listener rules are internal Layer 7 routing logic evaluated sequentially inside ALB memory. |
+| **Target Group drawn as a physical router** | **Logical Target Group Boundary** | Target Groups are logical routing groupings, not physical middleboxes. |
+| **Internal VPC client drawn outside VPC** | **Client placed inside VPC CIDR Boundary** | Internal ALBs have strictly private IP addresses; only callers inside the VPC or Direct Connect can reach them. |
+| **Separate `/health` drawn to backend** | **Dashed fixed response at ALB edge** | Edge fixed responses are answered immediately by the ALB proxy without generating backend traffic. |
+
+### Diagram Files & Editable Source:
+* **Editable Draw.io:** [`project-04-architecture.drawio`](./project-04-architecture.drawio) (open directly in [diagrams.net](https://app.diagrams.net))
+* **Crisp Vector SVG:** [`project-04-architecture.svg`](./project-04-architecture.svg)
+* **High-Res PNG (3200x2460):** [`architecture_diagram.png`](./architecture_diagram.png)
+* **Python Standalone Generator:** [`render_architecture.py`](./render_architecture.py) (uses pure Python standard library XML + base64 assets — zero Graphviz required!)
+
+---
+
+## 6. Directory Structure
 
 ```text
 04-private-microservice-ingress-alb/
-├── main.tf                 # VPC, Subnets, Chained SGs, ALB, Target Group, and Layer 7 Rules
-├── variables.tf            # Region, project naming, CIDR, and app port variables
-├── outputs.tf              # ALB ARN, DNS name, Target Group ARN, and SG IDs
-├── provider.tf             # AWS Provider configured for Floci (ec2 and elbv2 endpoints)
-├── generate_diagram.py     # Automated Python Graphviz architecture generator
-├── architecture_diagram.png# Generated visual architecture diagram
-├── INTERVIEW_QNA.md        # 6 In-depth SRE & Cloud Architect interview scenarios
-└── README.md               # Production architecture guide & verification
+├── main.tf                     # VPC, Subnets, Chained SGs, ALB, Target Group, and Layer 7 Rules
+├── variables.tf                # Region, project naming, CIDR, and app port variables
+├── outputs.tf                  # ALB ARN, DNS name, Target Group ARN, and SG IDs
+├── provider.tf                 # AWS Provider configured for Floci (ec2 and elbv2 endpoints)
+├── architecture_diagram.png    # High-resolution (3200x2460) presentation architecture diagram
+├── project-04-architecture.svg # Scalable vector graphic for web and presentations
+├── project-04-architecture.drawio # Fully editable native diagram for diagrams.net / draw.io
+├── render_architecture.py      # Standalone Python XML diagram generator (Zero Graphviz required)
+├── project.json                # Declarative architecture topology configuration
+├── assets/                     # Clean official AWS service icons (ALB, EC2, User)
+├── generate_diagram.py         # Graphviz-based fallback architecture generator
+├── INTERVIEW_QNA.md            # 6 In-depth SRE & Cloud Architect interview scenarios
+└── README.md                   # Production architecture guide & verification
 ```
 
 ---
 
-## 6. Step-by-Step Local Verification (Floci)
+## 7. Step-by-Step Local Verification (Floci)
 
 ### A. Ensure Floci Services are Running
 ```powershell
@@ -157,7 +182,7 @@ terraform destroy -auto-approve
 
 ---
 
-## 7. SRE & Cloud Architect Interview Mastery Guide
+## 8. SRE & Cloud Architect Interview Mastery Guide
 
 For deep-dive scenarios covering Nitro Security Group Chaining, Layer 4 vs Layer 7 trade-offs, health check death spiral prevention, and stateful vs stateless connection tracking, read:
 👉 **[INTERVIEW_QNA.md](./INTERVIEW_QNA.md)**

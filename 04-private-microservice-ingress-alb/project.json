@@ -1,0 +1,21 @@
+{
+  "title": "Project 04 · Internal microservice ingress",
+  "region": "us-east-1",
+  "vpc_cidr": "10.0.0.0/16",
+  "target_group": "Microservice targets",
+  "output": "project-04-architecture",
+  "availability_zones": [
+    {
+      "name": "us-east-1a",
+      "subnet": "10.0.11.0/24",
+      "replica": "Microservice replica 1",
+      "target": "10.0.11.x:8080"
+    },
+    {
+      "name": "us-east-1b",
+      "subnet": "10.0.12.0/24",
+      "replica": "Microservice replica 2",
+      "target": "10.0.12.x:8080"
+    }
+  ]
+}
