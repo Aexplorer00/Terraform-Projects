@@ -2,7 +2,9 @@
 
 A production-grade, multi-AZ network architecture engineered for **Zero-Trust security**, **FinOps cost optimization**, and **real-time network observability**. Built with HashiCorp Terraform and validated against **Floci** (Local AWS Emulator).
 
-![Architecture Diagram](./architecture_diagram.png)
+![Architecture Diagram](./project-03-architecture.svg)
+
+> **Editable Architecture:** Open [`project-03-architecture.drawio`](./project-03-architecture.drawio) directly in [diagrams.net](https://app.diagrams.net) to edit any element. Re-render with `python render_architecture.py`.
 
 ---
 
