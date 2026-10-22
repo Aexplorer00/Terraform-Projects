@@ -3,7 +3,9 @@
 ## 1. Architectural Overview
 This project provisions an enterprise-grade, highly resilient Serverless Microservice API on AWS using Terraform, simulated locally and verified on **Floci**.
 
-![Architecture Diagram](./architecture_diagram.png)
+![Architecture Diagram](./project-02-architecture.svg)
+
+> **Editable Architecture:** Open [`project-02-architecture.drawio`](./project-02-architecture.drawio) directly in [diagrams.net](https://app.diagrams.net) to edit any element. Re-render with `python render_architecture.py`.
 
 ```mermaid
 flowchart LR
