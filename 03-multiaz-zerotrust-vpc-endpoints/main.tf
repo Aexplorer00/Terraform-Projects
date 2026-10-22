@@ -50,7 +50,7 @@ resource "aws_internet_gateway" "gw" {
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   count                   = length(var.public_subnet_cidrs)
-  cidr_block              = var.public_subnet_cidrs[count.index]
+  cidr_block              = cidrsubnet(var.vpc_cidr, 8, count.index + 1)
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = true
 
@@ -73,7 +73,7 @@ resource "aws_subnet" "public" {
 resource "aws_subnet" "private" {
   vpc_id                  = aws_vpc.main.id
   count                   = length(var.private_subnet_cidrs)
-  cidr_block              = var.private_subnet_cidrs[count.index]
+  cidr_block              = cidrsubnet(var.vpc_cidr, 8, count.index + 11)
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = false
 
@@ -150,6 +150,28 @@ resource "aws_vpc_endpoint" "s3" {
   service_name      = "com.amazonaws.${var.aws_region}.s3"
   vpc_endpoint_type = "Gateway"
   route_table_ids   = [aws_route_table.private.id]
+
+  # TODO: Add Zero-Trust Endpoint Policy
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowOnlyCompanyBuckets"
+        Effect    = "Allow"
+        Principal = "*"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::${var.project_name}-*",
+          "arn:aws:s3:::${var.project_name}-*/*"
+        ]
+      }
+    ]
+  })
+
   tags = {
     Name = "${var.project_name}-s3-endpoint"
   }
@@ -169,5 +191,86 @@ resource "aws_vpc_endpoint" "dynamodb" {
   tags = {
     Name = "${var.project_name}-dynamodb-endpoint"
   }
-  # TODO: Fill in DynamoDB Gateway Endpoint
 }
+
+# ------------------------------------------------------------------------------
+# 8. Observability as Code: VPC Flow Logs
+# ------------------------------------------------------------------------------
+# TODO 11: Create CloudWatch Log Group for VPC Flow Logs
+# Requirements:
+# - name = "/aws/vpc/${var.project_name}-flow-logs"
+# - retention_in_days = 7
+resource "aws_cloudwatch_log_group" "flow_log" {
+  name              = "/aws/vpc/${var.project_name}-flow-logs"
+  retention_in_days = 7
+
+  tags = {
+    Name = "${var.project_name}-flow-log-group"
+  }
+}
+
+# TODO 12: Create IAM Role for VPC Flow Logs Service
+# Requirements:
+# - name = "${var.project_name}-flow-logs-role"
+# - assume_role_policy allowing service "vpc-flow-logs.amazonaws.com"
+resource "aws_iam_role" "flow_log_role" {
+  name = "${var.project_name}-flow_log_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "vpc-flow-logs.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "${var.project_name}-flow_log_role"
+  }
+}
+
+# TODO 13: Create IAM Role Policy for CloudWatch Logging
+# Requirements:
+# - name = "${var.project_name}-flow-logs-policy"
+# - role = aws_iam_role.flow_log_role.id
+# - Actions: "logs:CreateLogStream", "logs:PutLogEvents", "logs:DescribeLogGroups", "logs:DescribeLogStreams"
+# - Resource: "*"
+resource "aws_iam_role_policy" "flow_log_policy" {
+  name = "${var.project_name}-flow-logs-policy"
+  role = aws_iam_role.flow_log_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
+  # TODO: Fill in IAM Role Policy
+}
+
+# TODO 14: Create the VPC Flow Log resource
+# Requirements:
+# - iam_role_arn = aws_iam_role.flow_log_role.arn
+# - log_destination = aws_cloudwatch_log_group.flow_log.arn
+# - traffic_type = "ALL" (Captures both ACCEPT and REJECT packets)
+# - vpc_id = aws_vpc.main.id
+resource "aws_flow_log" "main" {
+  iam_role_arn    = aws_iam_role.flow_log_role.arn
+  log_destination = aws_cloudwatch_log_group.flow_log.arn
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.main.id
+  # TODO: Fill in aws_flow_log
+}
+

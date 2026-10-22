@@ -86,3 +86,26 @@
   4. `10.0.1.3`: **Future Use** (reserved by AWS for protocol expansion).
   5. `10.0.1.255`: **Network Broadcast Address** (AWS VPC networks do not support standard broadcast, but this address is still reserved).
 * For a `/24` subnet: $2^{(32 - 24)} = 256$ total addresses $- 5 \text{ reserved} = \mathbf{251}$ usable private IPs.
+
+---
+
+### Question 6: What is the primary FinOps hazard when enabling VPC Flow Logs with CloudWatch Logs? How do you remediate it?
+
+#### The SRE / Architect Answer:
+* **The Hazard:** By default, AWS CloudWatch Log Groups have a retention policy of **"Never Expire"**. In a high-traffic production VPC with multiple microservices and databases, VPC Flow Logs generate gigabytes of log lines daily. Over 1–2 years, retaining raw flow logs indefinitely creates a massive, continuously compounding CloudWatch storage bill ($0.03 per GB/month).
+* **The Remediation:**
+  1. **Hot Ingestion Capping:** Always set `retention_in_days` (e.g., 7 or 14 days) in Terraform to automatically purge transient flow logs from CloudWatch once the operational troubleshooting window has passed.
+  2. **Cold Tiering to S3:** For compliance audits (e.g., PCI-DSS requiring 365 days of network traffic history), configure an AWS Flow Log subscription or direct S3 export in Apache Parquet format with an S3 Lifecycle rule transitioning logs to S3 Glacier Instant Retrieval after 30 days.
+
+---
+
+### Question 7: Walk through the security handshake between AWS VPC Flow Logs and CloudWatch. Why can't the Flow Log service write directly to CloudWatch without an IAM role?
+
+#### The SRE / Architect Answer:
+* Under the AWS Shared Responsibility Model and Zero-Trust architecture, internal AWS services are completely isolated from customer data planes. The VPC Flow Log engine runs as a hypervisor daemon on AWS Nitro physical hosts.
+* **The Handshake:**
+  1. The Flow Log service cannot assume customer identity without explicit permission. We define an IAM Role with a **Trust Policy** declaring `Principal = { Service = "vpc-flow-logs.amazonaws.com" }`.
+  2. When the Flow Log daemon needs to write a batch of packet records, it calls AWS Security Token Service (`sts:AssumeRole`) using that specific role ARN.
+  3. STS verifies the trust policy and returns short-lived, temporary session credentials to the daemon.
+  4. The daemon uses these credentials to call `logs:CreateLogStream` (one per ENI) and `logs:PutLogEvents` into the customer's `/aws/vpc/xxx-flow-logs` log group.
+  5. If the IAM role is deleted or misconfigured, the Flow Log engine fails closed, protecting the customer from unauthorized data injection.
